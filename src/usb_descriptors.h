@@ -9,19 +9,25 @@
 
 enum
 {
-  REPORT_ID_SBUS = 1,
+  REPORT_ID_SBUS_1 = 1,
+  REPORT_ID_SBUS_2,
   REPORT_ID_COUNT
 };
 
 
-#define NUM_AXIS 16
+#define NUM_AXIS_PER_REPORT 8
 
 /// HID Gamepad Protocol Report, but with SBUS 16 channels.
 typedef struct TU_ATTR_PACKED
 {
-  uint16_t axis[NUM_AXIS];
+  uint16_t axis[NUM_AXIS_PER_REPORT];
   uint8_t signals;  ///< Buttons mask for currently pressed buttons
 } hid_sbus_report_t;
+
+typedef struct TU_ATTR_PACKED
+{
+  uint16_t axis[NUM_AXIS_PER_REPORT];
+} hid_sbus_report_extension_t;
 
 
 static_assert(CFG_TUD_HID_EP_BUFSIZE >= sizeof(hid_sbus_report_t));

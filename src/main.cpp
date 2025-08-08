@@ -115,43 +115,115 @@ void tud_resume_cb(void)
 // USB HID
 //--------------------------------------------------------------------+
 
-static void send_hid_report(uint32_t btn)
+static void send_main_report(uint32_t btn)
 {
   // skip if hid is not ready yet
   if ( !tud_hid_ready() ) return;
 
   // use to avoid send multiple consecutive zero report for keyboard
-  static bool has_gamepad_key = false;
+  static bool lastLevel = false;
+  bool changed = false;
 
-  hid_sbus_report_t report;
-  memset(&report, 0, sizeof(hid_sbus_report_t));
+  static hid_sbus_report_t report;
+  // no memset for the lulz
 
   if ( btn )
   {
+    if (!lastLevel)
+    {
+      lastLevel = true;
+      changed = true;
+    }
+
     report.axis[0] += 1;
     report.axis[1] = 0xFFFF;
     report.signals = 1;
-    if (!has_gamepad_key)
-    {
-      tud_hid_report(REPORT_ID_SBUS, &report, sizeof(report));
-      has_gamepad_key = true;
-    }
 
   }else
   {
-    report.axis[0] = 0000;
+    if (lastLevel)
+    {
+      lastLevel = false;
+      changed = true;
+
+    }
+
+    // report.axis[0] = 0;
     report.axis[1] = 0;
     report.signals = 0;
-    if (has_gamepad_key)
-    {
-      tud_hid_report(REPORT_ID_SBUS, &report, sizeof(report));
-      has_gamepad_key = false;
-    }
+  }
+
+  if (changed)
+  {
+    tud_hid_report(REPORT_ID_SBUS_1, &report, sizeof(report));
   }
 }
 
+// TODO: Heavily reduce code duplication
+static void send_ext_report(uint32_t btn)
+{
+  // use to avoid send multiple consecutive zero report for keyboard
+  static bool lastLevel = false;
+  bool changed = false;
+
+  static hid_sbus_report_extension_t report;
+
+  if ( btn )
+  {
+    if (!lastLevel)
+    {
+      lastLevel = true;
+      changed = true;
+    }
+
+    report.axis[0] += 1;
+    report.axis[2] = 0xFFFF;
+
+  }else
+  {
+    if (lastLevel)
+    {
+      lastLevel = false;
+      changed = true;
+    }
+
+    report.axis[0] = 0000;
+    report.axis[2] = 0;
+  }
+
+  if (changed)
+  {
+    tud_hid_report(REPORT_ID_SBUS_2, &report, sizeof(report));
+  }
+}
+
+bool
+shouldDoStuff()
+{
+  return board_button_read() | (board_millis() % 1000 > 500);
+}
+
 // Every 10ms, we will sent 1 report for each HID profile (keyboard, mouse etc ..)
-// tud_hid_report_complete_cb() is used to send the next report after previous one is complete
+
+// Invoked when sent REPORT successfully to host
+// Application can use this to send the next report
+// Note: For composite reports, report[0] is report ID
+void tud_hid_report_complete_cb(uint8_t instance, uint8_t const* report, uint16_t len)
+{
+  (void) instance;
+  (void) len;
+
+  uint8_t next_report_id = report[0] + 1u;
+
+  switch (next_report_id)
+  {
+    case REPORT_ID_SBUS_2:
+      send_ext_report(shouldDoStuff());
+      break;
+  }
+}
+
+
 void hid_task(void)
 {
   // Poll every 10ms
@@ -161,7 +233,7 @@ void hid_task(void)
   if ( board_millis() - start_ms < interval_ms) return; // not enough time
   start_ms += interval_ms;
 
-  uint32_t const btn = board_button_read() | (board_millis() % 1000 > 500);
+  uint32_t const btn = shouldDoStuff();
 
   // Remote wakeup
   if ( tud_suspended() && btn )
@@ -171,8 +243,7 @@ void hid_task(void)
     tud_remote_wakeup();
   }else
   {
-    // Send the only report we have.
-    send_hid_report(btn);
+    send_main_report(btn);
   }
 }
 
@@ -201,8 +272,8 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
   {
     switch (report_id)
     {
-    case REPORT_ID_SBUS:
-      // We only have one report, that is gamepad.
+    case REPORT_ID_SBUS_1:
+    // case REPORT_ID_SBUS_2:
       // Does this implement a return path?
       // Would be interesting.
       break;

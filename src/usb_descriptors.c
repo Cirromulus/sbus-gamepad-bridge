@@ -77,43 +77,26 @@ uint8_t const * tud_descriptor_device_cb(void)
 //--------------------------------------------------------------------+
 // HID Report Descriptor
 //--------------------------------------------------------------------+
-#define TUD_HID_REPORT_DESC_SBUS(...) \
-  HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     )                 ,\
-  HID_USAGE      ( HID_USAGE_DESKTOP_MULTI_AXIS_CONTROLLER  )                 ,\
-  HID_COLLECTION ( HID_COLLECTION_APPLICATION )                 ,\
-    /* Report ID if any */\
-    __VA_ARGS__ \
-    /* the channels */ \
+#define TUD_HID_REPORT_8_CHANNEL_AXIS \
     HID_COLLECTION   ( HID_COLLECTION_PHYSICAL               ) ,\
-      HID_REPORT_COUNT   ( 8                                   ) ,\
+      HID_REPORT_COUNT   ( NUM_AXIS_PER_REPORT                            ) ,\
       HID_REPORT_SIZE    ( 16                                   ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 0             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 1             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 2             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 3             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 4             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 5             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 6             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 7             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_Y             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_Z             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_RX             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_RY             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_RZ             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_DIAL             ) ,\
       HID_LOGICAL_MIN_N  ( 0, 2) ,\
       HID_LOGICAL_MAX_N  ( 0xFFFF, 2) ,\
       HID_INPUT          ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
-    HID_COLLECTION_END, \
-    HID_COLLECTION   ( HID_COLLECTION_PHYSICAL               ) ,\
-      HID_REPORT_COUNT   ( 8                                   ) ,\
-      HID_REPORT_SIZE    ( 16                                   ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 0             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 1             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 2             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 3             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 4             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 5             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 6             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_X + 7             ) ,\
-      HID_LOGICAL_MIN_N  ( 0, 2) ,\
-      HID_LOGICAL_MAX_N  ( 0xFFFF, 2) ,\
-      HID_INPUT          ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
-    HID_COLLECTION_END, \
+    HID_COLLECTION_END \
+
+static_assert(NUM_AXIS_PER_REPORT == 8);
+
+#define TUD_HID_REPORT_BUTTONS \
     HID_COLLECTION   ( HID_COLLECTION_PHYSICAL               ) ,\
       /* 8 bit Button Map */ \
       HID_USAGE_PAGE     ( HID_USAGE_PAGE_BUTTON                  ) ,\
@@ -124,12 +107,33 @@ uint8_t const * tud_descriptor_device_cb(void)
       HID_REPORT_COUNT   ( 8                                     ) ,\
       HID_REPORT_SIZE    ( 1                                      ) ,\
       HID_INPUT          ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
-      HID_COLLECTION_END, \
     HID_COLLECTION_END \
+
+#define TUD_HID_REPORT_DESC_SBUS_MAIN(...) \
+  HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     )                 ,\
+  HID_USAGE      ( HID_USAGE_DESKTOP_MULTI_AXIS_CONTROLLER  )                 ,\
+  HID_COLLECTION ( HID_COLLECTION_APPLICATION )                 ,\
+    /* Report ID if any */\
+    __VA_ARGS__ \
+    /* the channels */ \
+    TUD_HID_REPORT_8_CHANNEL_AXIS, \
+    TUD_HID_REPORT_BUTTONS, \
+  HID_COLLECTION_END \
+
+#define TUD_HID_REPORT_DESC_SBUS_EXT(...) \
+  HID_USAGE_PAGE ( HID_USAGE_PAGE_DESKTOP     )                 ,\
+  HID_USAGE      ( HID_USAGE_DESKTOP_MULTI_AXIS_CONTROLLER  )                 ,\
+  HID_COLLECTION ( HID_COLLECTION_APPLICATION )                 ,\
+    /* Report ID if any */\
+    __VA_ARGS__ \
+    /* the channels */ \
+    TUD_HID_REPORT_8_CHANNEL_AXIS, \
+  HID_COLLECTION_END \
 
 uint8_t const desc_hid_report[] =
 {
-  TUD_HID_REPORT_DESC_SBUS ( HID_REPORT_ID( REPORT_ID_SBUS ))
+  TUD_HID_REPORT_DESC_SBUS_MAIN ( HID_REPORT_ID( REPORT_ID_SBUS_1 )),
+  TUD_HID_REPORT_DESC_SBUS_EXT ( HID_REPORT_ID( REPORT_ID_SBUS_2 ))
 };
 
 // Invoked when received GET HID REPORT DESCRIPTOR
