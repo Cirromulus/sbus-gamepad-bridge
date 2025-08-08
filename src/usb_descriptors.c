@@ -27,6 +27,7 @@
 #include "tusb.h"
 #include "usb_descriptors.h"
 
+
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
  * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
  *
@@ -83,46 +84,53 @@ uint8_t const * tud_descriptor_device_cb(void)
     /* Report ID if any */\
     __VA_ARGS__ \
     /* the channels */ \
-    HID_USAGE_PAGE     ( HID_USAGE_PAGE_DESKTOP               ) ,\
-      HID_REPORT_COUNT   ( NUM_AXIS                                   ) ,\
+    HID_COLLECTION   ( HID_COLLECTION_PHYSICAL               ) ,\
+      HID_REPORT_COUNT   ( 8                                   ) ,\
       HID_REPORT_SIZE    ( 16                                   ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
-      HID_LOGICAL_MIN    ( 0                               ) ,\
-      HID_LOGICAL_MAX_N  ( 0x03FF, 2                               ) ,\
-      HID_INPUT          ( HID_DATA | HID_LINEAR | HID_ABSOLUTE ) ,\
-    /* 8 bit Button Map */ \
-    HID_USAGE_PAGE     ( HID_USAGE_PAGE_BUTTON                  ) ,\
-    HID_USAGE_MIN      ( 1                                      ) ,\
-    HID_USAGE_MAX      ( 8                                     ) ,\
-    HID_LOGICAL_MIN    ( 0                                      ) ,\
-    HID_LOGICAL_MAX    ( 1                                      ) ,\
-    HID_REPORT_COUNT   ( 8                                     ) ,\
-    HID_REPORT_SIZE    ( 1                                      ) ,\
-    HID_INPUT          ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 0             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 1             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 2             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 3             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 4             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 5             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 6             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 7             ) ,\
+      HID_LOGICAL_MIN_N  ( 0, 2) ,\
+      HID_LOGICAL_MAX_N  ( 0xFFFF, 2) ,\
+      HID_INPUT          ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
+    HID_COLLECTION_END, \
+    HID_COLLECTION   ( HID_COLLECTION_PHYSICAL               ) ,\
+      HID_REPORT_COUNT   ( 8                                   ) ,\
+      HID_REPORT_SIZE    ( 16                                   ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 0             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 1             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 2             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 3             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 4             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 5             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 6             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_X + 7             ) ,\
+      HID_LOGICAL_MIN_N  ( 0, 2) ,\
+      HID_LOGICAL_MAX_N  ( 0xFFFF, 2) ,\
+      HID_INPUT          ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
+    HID_COLLECTION_END, \
+    HID_COLLECTION   ( HID_COLLECTION_PHYSICAL               ) ,\
+      /* 8 bit Button Map */ \
+      HID_USAGE_PAGE     ( HID_USAGE_PAGE_BUTTON                  ) ,\
+      HID_USAGE_MIN      ( 1                                      ) ,\
+      HID_USAGE_MAX      ( 8                                     ) ,\
+      HID_LOGICAL_MIN    ( 0                                      ) ,\
+      HID_LOGICAL_MAX    ( 1                                      ) ,\
+      HID_REPORT_COUNT   ( 8                                     ) ,\
+      HID_REPORT_SIZE    ( 1                                      ) ,\
+      HID_INPUT          ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
+      HID_COLLECTION_END, \
     HID_COLLECTION_END \
-
 
 uint8_t const desc_hid_report[] =
 {
-  TUD_HID_REPORT_DESC_SBUS ( HID_REPORT_ID(REPORT_ID_SBUS      ))
+  TUD_HID_REPORT_DESC_SBUS ( HID_REPORT_ID( REPORT_ID_SBUS ))
 };
-
-static_assert(sizeof(hid_sbus_report_t) < 64);
 
 // Invoked when received GET HID REPORT DESCRIPTOR
 // Application return pointer to descriptor

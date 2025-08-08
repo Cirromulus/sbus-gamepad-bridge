@@ -2,6 +2,8 @@
 #ifndef USB_DESCRIPTORS_H_
 #define USB_DESCRIPTORS_H_
 
+#include <include/tusb_config.h>
+
 // We only want one descriptor, but many would be possible.
 // See tinyusb/examples/device/hid_composite for more
 
@@ -21,5 +23,7 @@ typedef struct TU_ATTR_PACKED
   uint8_t signals;  ///< Buttons mask for currently pressed buttons
 } hid_sbus_report_t;
 
+
+static_assert(CFG_TUD_HID_EP_BUFSIZE >= sizeof(hid_sbus_report_t));
 
 #endif /* USB_DESCRIPTORS_H_ */
