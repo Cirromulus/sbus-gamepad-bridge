@@ -40,7 +40,7 @@
 
 // This is "our" ID!
 #define USB_VID   0x5050
-#define USB_BCD   0x0200
+#define USB_BCD   0x0200+2
 
 //--------------------------------------------------------------------+
 // Device Descriptors
@@ -83,14 +83,28 @@ uint8_t const * tud_descriptor_device_cb(void)
     /* Report ID if any */\
     __VA_ARGS__ \
     /* the channels */ \
-    HID_LOGICAL_MIN    ( 0                               ) ,\
-    HID_LOGICAL_MAX_N  ( 0x03FF, 2                               ) ,\
-    HID_REPORT_COUNT   ( 2                                   ) ,\
-    HID_REPORT_SIZE    ( 16                                   ) ,\
     HID_USAGE_PAGE     ( HID_USAGE_PAGE_DESKTOP               ) ,\
-    HID_USAGE          ( HID_USAGE_DESKTOP_Y             ) ,\
-    HID_USAGE          ( HID_USAGE_DESKTOP_X             ) ,\
-    HID_INPUT          ( HID_DATA | HID_LINEAR | HID_ABSOLUTE ) ,\
+      HID_REPORT_COUNT   ( NUM_AXIS                                   ) ,\
+      HID_REPORT_SIZE    ( 16                                   ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
+      HID_LOGICAL_MIN    ( 0                               ) ,\
+      HID_LOGICAL_MAX_N  ( 0x03FF, 2                               ) ,\
+      HID_INPUT          ( HID_DATA | HID_LINEAR | HID_ABSOLUTE ) ,\
     /* 8 bit Button Map */ \
     HID_USAGE_PAGE     ( HID_USAGE_PAGE_BUTTON                  ) ,\
     HID_USAGE_MIN      ( 1                                      ) ,\
@@ -108,6 +122,8 @@ uint8_t const desc_hid_report[] =
   TUD_HID_REPORT_DESC_SBUS ( HID_REPORT_ID(REPORT_ID_SBUS      ))
 };
 
+static_assert(sizeof(hid_sbus_report_t) < 64);
+
 // Invoked when received GET HID REPORT DESCRIPTOR
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
@@ -124,12 +140,16 @@ uint8_t const * tud_hid_descriptor_report_cb(uint8_t instance)
 enum
 {
   ITF_NUM_HID,
+  // ITF_NUM_CDC,
   ITF_NUM_TOTAL
 };
 
-#define  CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN)
+#define  CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN /* + TUD_CDC_DESC_LEN */)
 
-#define EPNUM_HID   0x81
+// #define EPNUM_CDC_NOTIF 0x81
+// #define EPNUM_CDC_OUT 0x02
+// #define EPNUM_CDC_IN 0x82
+#define EPNUM_HID   0x83
 
 uint8_t const desc_configuration[] =
 {
@@ -138,6 +158,9 @@ uint8_t const desc_configuration[] =
 
   // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
   TUD_HID_DESCRIPTOR(ITF_NUM_HID, 0, HID_ITF_PROTOCOL_NONE, sizeof(desc_hid_report), EPNUM_HID, CFG_TUD_HID_EP_BUFSIZE, 5)
+
+    //   // Interface number, string index, EP notification address and size, EP data address (out, in) and size.
+    // TUD_CDC_DESCRIPTOR(ITF_NUM_CDC, 4, EPNUM_CDC_NOTIF, 8, EPNUM_CDC_OUT, EPNUM_CDC_IN, 64),
 };
 
 #if TUD_OPT_HIGH_SPEED

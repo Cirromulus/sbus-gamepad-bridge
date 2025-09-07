@@ -128,7 +128,8 @@ static void send_hid_report(uint32_t btn)
 
   if ( btn )
   {
-    report.axis[0] = 0x02FF;
+    report.axis[0] += 1;
+    report.axis[1] = 0xFFFF;
     report.signals = 1;
     if (!has_gamepad_key)
     {
@@ -139,6 +140,7 @@ static void send_hid_report(uint32_t btn)
   }else
   {
     report.axis[0] = 0000;
+    report.axis[1] = 0;
     report.signals = 0;
     if (has_gamepad_key)
     {

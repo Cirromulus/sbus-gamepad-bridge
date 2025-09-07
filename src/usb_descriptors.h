@@ -12,11 +12,12 @@ enum
 };
 
 
+#define NUM_AXIS 16
 
 /// HID Gamepad Protocol Report, but with SBUS 16 channels.
 typedef struct TU_ATTR_PACKED
 {
-  uint16_t axis[2];
+  uint16_t axis[NUM_AXIS];
   uint8_t signals;  ///< Buttons mask for currently pressed buttons
 } hid_sbus_report_t;
 
