@@ -123,25 +123,28 @@ static void send_hid_report(uint32_t btn)
   // use to avoid send multiple consecutive zero report for keyboard
   static bool has_gamepad_key = false;
 
-  hid_gamepad_report_t report =
-  {
-    .x   = 0, .y = 0, .z = 0, .rz = 0, .rx = 0, .ry = 0,
-    .hat = 0, .buttons = 0
-  };
+  hid_sbus_report_t report;
+  memset(&report, 0, sizeof(hid_sbus_report_t));
 
   if ( btn )
   {
-    report.hat = GAMEPAD_HAT_UP;
-    report.buttons = GAMEPAD_BUTTON_A;
-    tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
+    report.axis[0] = 0x02FF;
+    report.signals = 1;
+    if (!has_gamepad_key)
+    {
+      tud_hid_report(REPORT_ID_SBUS, &report, sizeof(report));
+      has_gamepad_key = true;
+    }
 
-    has_gamepad_key = true;
   }else
   {
-    report.hat = GAMEPAD_HAT_CENTERED;
-    report.buttons = 0;
-    if (has_gamepad_key) tud_hid_report(REPORT_ID_GAMEPAD, &report, sizeof(report));
-    has_gamepad_key = false;
+    report.axis[0] = 0000;
+    report.signals = 0;
+    if (has_gamepad_key)
+    {
+      tud_hid_report(REPORT_ID_SBUS, &report, sizeof(report));
+      has_gamepad_key = false;
+    }
   }
 }
 
@@ -156,7 +159,7 @@ void hid_task(void)
   if ( board_millis() - start_ms < interval_ms) return; // not enough time
   start_ms += interval_ms;
 
-  uint32_t const btn = board_button_read();
+  uint32_t const btn = board_button_read() | (board_millis() % 1000 > 500);
 
   // Remote wakeup
   if ( tud_suspended() && btn )
@@ -196,7 +199,7 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
   {
     switch (report_id)
     {
-    case REPORT_ID_GAMEPAD:
+    case REPORT_ID_SBUS:
       // We only have one report, that is gamepad.
       // Does this implement a return path?
       // Would be interesting.
