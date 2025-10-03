@@ -36,6 +36,10 @@ target_include_directories(${PROJECT}
         PRIVATE "."
 )
 
+target_compile_definitions(${PROJECT} PRIVATE
+        CFG_TUD_ENABLED=1
+)
+
 # Make sure TinyUSB can find tusb_config.h
 target_include_directories(${PROJECT} PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/include)
@@ -58,7 +62,9 @@ pico_generate_pio_header(${PROJECT}
 target_link_libraries(${PROJECT}
         pico_stdlib
         hardware_irq
+        hardware_pio
         pico_multicore
+        pico_sync
         pico_unique_id
         tinyusb_device
         tinyusb_board
