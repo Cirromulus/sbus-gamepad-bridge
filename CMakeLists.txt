@@ -40,6 +40,10 @@ target_compile_definitions(${PROJECT} PRIVATE
         CFG_TUD_ENABLED=1
 )
 
+# Dirty thing in-between to emit estimated stack usage
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstack-usage")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fstack-usage")
+
 # Make sure TinyUSB can find tusb_config.h
 target_include_directories(${PROJECT} PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}/include)
