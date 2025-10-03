@@ -136,7 +136,7 @@ void tud_hid_report_complete_cb(uint8_t instance, uint8_t const* report, uint16_
   (void) instance;
   (void) len;
 
-  uint8_t next_report_id = report[0] + 1u;
+  const uint8_t next_report_id = report[0] + 1u;
 
   switch (next_report_id)
   {
@@ -150,6 +150,8 @@ void tud_hid_report_complete_cb(uint8_t instance, uint8_t const* report, uint16_
 // Invoked when device is mounted
 void tud_mount_cb(void)
 {
+    // reset last state to send it again once mounted
+    hid::lastSentState = std::nullopt;
     if (global::blinkInfo)
     {
         global::blinkInfo->setState(BlinkInfo::State::mounted);

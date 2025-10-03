@@ -22,9 +22,13 @@ public:
     getLatest()
     {
         // TODO: Find out whether the read needs to be instantaneous.
-        mutex_enter_blocking(&mMutex);
-        mCopy = mBuffer;
-        mutex_exit(&mMutex);
+        // ALSO TODO: Analyze "fairness" of this tryenter.
+        // Seems to work, but threading is complicated!
+        if (mutex_try_enter(&mMutex, 0))
+        {
+            mCopy = mBuffer;
+            mutex_exit(&mMutex);
+        }
         return mCopy;
     }
 
