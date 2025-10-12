@@ -12,6 +12,9 @@
 
 static constexpr size_t onboardLedNr = 16;
 static constexpr size_t failsafeAfter_ms = 500;
+static constexpr SbusChannels failsafeState {
+  {0}, SbusChannels::failsafeMask
+};
 
 void sbus_handling()
 {
@@ -34,6 +37,7 @@ void sbus_handling()
       const std::optional<uint8_t> sbusByte = receiver.getByte();
       if (!sbusByte)
       {
+        global::sbusState.setLatest(failsafeState);
         global::blinkInfo->setState(BlinkInfo::State::noSbus);
         uart_puts(uart1, "no\r\n");
         continue;
@@ -50,15 +54,16 @@ void sbus_handling()
         decoder.consumeChar(*sbusByte)
           .transform([](auto s){return global::sbusState.setLatest(s);});
 
+      // this mixture of functional and imperative is a bit annoying, sorry
       if (maybeSbusFrameSync || maybeSbusFrameSync.error() == SbusDecoder::DecodeState::consumed)
       {
-        // this will probably blink only very short,
-        // because it is overwritten soon again by the noSbus state (no timeout)
         global::blinkInfo->setState(BlinkInfo::State::receivingValidSbus);
         hadValidSbus = true;
       }
       else
       {
+        // TODO: Go into failsafe after some time?
+        // Or manually re-sending the last one with "frame lost" bit?
         global::blinkInfo->setState(BlinkInfo::State::lostSbusFrame);
         hadValidSbus = false;
       }
