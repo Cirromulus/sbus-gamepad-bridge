@@ -1,6 +1,7 @@
 #include <include/common_state.hpp>
 #include <include/hid_handling.h>
 #include <include/sbus_decoder.hpp>
+#include <include/sbus_uart.hpp>
 
 #include <pico/multicore.h>
 
@@ -9,11 +10,12 @@
 #include <string.h>
 
 static constexpr size_t onboardLedNr = 16;
-static constexpr bool testingValues = true;
+static constexpr bool testingValues = false;
 
 void coprocessor()
 {
     static SbusDecoder decoder;
+    static SbusUart receiver{uart0, 2};
 
     while(1)
     {
@@ -30,12 +32,11 @@ void coprocessor()
       }
       else
       {
-        // normal operation
-        // TODO: SBUS link layer (aka serial 100'000 baud)
-        std::optional<uint8_t> newChar{};
-        newChar
-          .and_then([](auto c){return decoder.consumeChar(c);})
+        decoder.consumeChar(receiver.getByte())
           .transform([](auto s){return global::sbusState.setLatest(s);});
+          // ignoring output for now.
+          // A "has value" with false means that we could not update the state
+          // through the thread synchronization mechanism.
       }
 
     }
