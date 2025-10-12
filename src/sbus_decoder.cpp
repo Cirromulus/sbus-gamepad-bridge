@@ -1,6 +1,8 @@
 #include <include/sbus_decoder.hpp>
 
-std::optional<SbusChannels>
+using namespace std;
+
+expected<SbusChannels, SbusDecoder::DecodeState>
 SbusDecoder::consumeChar(uint8_t const& byte)
 {
     if (mCurrPos == 0)
@@ -10,7 +12,7 @@ SbusDecoder::consumeChar(uint8_t const& byte)
         {
             mUnsyncPackets++;
             mCurrPos = 0;
-            return std::nullopt;
+            return unexpected(DecodeState::startMarkerNotAtStart);
         }
     }
     else if (mCurrPos < SbusFrame::endOfData)
@@ -21,15 +23,14 @@ SbusDecoder::consumeChar(uint8_t const& byte)
     {
         mCurrentFrame.flags = byte;
     }
-    else if (mCurrPos < SbusFrame::totalLen)
+    else // mCurrPos >= SbusFrame::totalLen
     {
         mCurrPos = 0;
-
 
         if (byte != SbusFrame::expectedEndMarker)
         {
             mUnsyncPackets++;
-            return std::nullopt;
+            return unexpected(DecodeState::endMarkerNotAtEnd);
         }
         // else
 
@@ -38,5 +39,6 @@ SbusDecoder::consumeChar(uint8_t const& byte)
 
     // successfully consumed mid-protocol character.
     mCurrPos++;
-    return std::nullopt;
+    // this is actually not "unexpected", but oh well
+    return unexpected(DecodeState::consumed);
 }

@@ -55,7 +55,7 @@ target_sources(${PROJECT} PUBLIC
 
 # enable USB serial output
 pico_enable_stdio_usb(${PROJECT} 0)
-pico_enable_stdio_uart(${PROJECT} 1)
+pico_enable_stdio_uart(${PROJECT} 0)
 
 # compile pio file
 pico_generate_pio_header(${PROJECT}

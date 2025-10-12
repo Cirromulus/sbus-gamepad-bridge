@@ -2,64 +2,65 @@
 #include <include/hid_handling.h>
 #include <include/sbus_decoder.hpp>
 #include <include/sbus_uart.hpp>
+#include <include/dummy_hexprint.hpp>
 
 #include <pico/multicore.h>
 
+#include <limits>
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
 static constexpr size_t onboardLedNr = 16;
-static constexpr bool testingValues = false;
+static constexpr size_t failsafeAfter_ms = 500;
 
 void sbus_handling()
 {
     static SbusDecoder decoder;
-    SbusUart receiver{uart0, 2};
+    SbusUart<failsafeAfter_ms> receiver{uart0, 1};
+
+    bool hadValidSbus = false;
+
+    // debug code: Uart printing
+    uart_init(uart1, 115200);
+    // set the gpio function to uart
+    gpio_set_function(4, GPIO_FUNC_UART);
+
+    uart_puts(uart1, "INITED\r\n");
+    //
 
     while(1)
     {
-
-      if constexpr (testingValues)
+      // debug code ----
+      const std::optional<uint8_t> sbusByte = receiver.getByte();
+      if (!sbusByte)
       {
-        static SbusChannels testingState{};
+        global::blinkInfo->setState(BlinkInfo::State::noSbus);
+        uart_puts(uart1, "no\r\n");
+        continue;
+      }
 
-        testingState.axis[0] = rand();
-        // FIXME: Why would this line cause (at least) core0 to hang?
-        // testingState.flags = board_button_read();
+      if (!hadValidSbus)
+      {
+        uart_putc(uart1, ' ');
+        hexprint(uart1, *sbusByte);
+      }
+      // ----
 
-        global::sbusState.setLatest(testingState);
+      const auto maybeSbusFrameSync =
+        decoder.consumeChar(*sbusByte)
+          .transform([](auto s){return global::sbusState.setLatest(s);});
+
+      if (maybeSbusFrameSync || maybeSbusFrameSync.error() == SbusDecoder::DecodeState::consumed)
+      {
+        // this will probably blink only very short,
+        // because it is overwritten soon again by the noSbus state (no timeout)
+        global::blinkInfo->setState(BlinkInfo::State::receivingValidSbus);
+        hadValidSbus = true;
       }
       else
       {
-        // debug code ----
-        global::blinkInfo->setState(BlinkInfo::State::noSbus);
-        const uint8_t sbusByte = receiver.getByte();
-        global::blinkInfo->setState(BlinkInfo::State::receivingSbus);
-
-        // ----
-        const auto maybeSbusFrameSync =
-          decoder.consumeChar(sbusByte /*receiver.getByte()*/)
-            .transform([](auto s){return global::sbusState.setLatest(s);});
-
-        if (maybeSbusFrameSync)
-        {
-          global::blinkInfo->setState(BlinkInfo::State::receivingValidSbus);
-        }
-        else
-        {
-            // Debug code! TODO: Only start after some lost frames
-            static SbusChannels testingState{};
-            static uint16_t counter{0};
-
-            // TODO: Just print it out
-            testingState.axis[0] = sbusByte;
-            testingState.axis[1] = counter++;
-            // FIXME: Why would this line cause (at least) core0 to hang?
-            // testingState.flags = board_button_read();
-
-            global::sbusState.setLatest(testingState);
-        }
+        global::blinkInfo->setState(BlinkInfo::State::lostSbusFrame);
+        hadValidSbus = false;
       }
     }
 }

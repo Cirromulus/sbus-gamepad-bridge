@@ -5,9 +5,11 @@
 
 // template <uart_inst_t* uartType, size_t pin>
 // pico sdk is not really template-friendly :F
+template <size_t timeout_ms>
 class SbusUart
 {
     static constexpr inline size_t baudrate = 100'000;
+    static constexpr inline size_t expectedInterFrameSpace_ms = 15;
     static constexpr inline size_t dataBits = 8;
     static constexpr inline size_t stopBits = 2;
     static constexpr inline uart_parity_t parity = UART_PARITY_EVEN;
@@ -30,9 +32,11 @@ public:
     }
 
     // This function will block until a character has been read
-    uint8_t
+    std::optional<uint8_t>
     getByte()
     {
+        if (!uart_is_readable_within_us(mUart, timeout_ms * 1000))
+            return std::nullopt;
         return uart_getc(mUart);
     }
 

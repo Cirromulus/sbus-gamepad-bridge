@@ -1,6 +1,6 @@
 #include <include/sbus.hpp>
 
-#include <optional>
+#include <expected>
 #include <algorithm>
 
 class SbusDecoder
@@ -20,7 +20,14 @@ class SbusDecoder
     };
 
 public:
-    std::optional<SbusChannels>
+    enum class DecodeState
+    {
+        consumed,
+        startMarkerNotAtStart,
+        endMarkerNotAtEnd,
+    };
+
+    std::expected<SbusChannels, DecodeState>
     consumeChar(uint8_t const& byte);
 
 private:

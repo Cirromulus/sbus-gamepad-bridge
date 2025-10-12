@@ -14,8 +14,8 @@ public:
         mounted,
         suspended,
         noSbus,
-        receivingSbus,
         receivingValidSbus,
+        lostSbusFrame,
     };
 
     void
@@ -46,10 +46,10 @@ private:
                 return WS2812LED::Color{0, 100, 200} * lightness;
             case State::noSbus:
                 return WS2812LED::Color{100, 0, 100} * lightness;
-            case State::receivingSbus:
-                return WS2812LED::Color{0, 100, 100} * lightness;
             case State::receivingValidSbus:
                 return WS2812LED::Color{0, 255, 100} * lightness;
+            case State::lostSbusFrame:
+                return WS2812LED::Color{200, 200, 0} * lightness;
         }
 
         // should never happen
