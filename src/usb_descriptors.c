@@ -74,6 +74,8 @@ uint8_t const * tud_descriptor_device_cb(void)
   return (uint8_t const *) &desc_device;
 }
 
+#define SBUS_MAX 0b11111111111  // 11 bit per channel
+
 //--------------------------------------------------------------------+
 // HID Report Descriptor
 //--------------------------------------------------------------------+
@@ -90,7 +92,7 @@ uint8_t const * tud_descriptor_device_cb(void)
       HID_USAGE          ( HID_USAGE_DESKTOP_SLIDER             ) ,\
       HID_USAGE          ( HID_USAGE_DESKTOP_DIAL             ) ,\
       HID_LOGICAL_MIN_N  ( 0, 2) ,\
-      HID_LOGICAL_MAX_N  ( 0xFFFF, 2) ,\
+      HID_LOGICAL_MAX_N  ( SBUS_MAX, 2) ,\
       HID_INPUT          ( HID_DATA | HID_VARIABLE | HID_ABSOLUTE ) ,\
     HID_COLLECTION_END \
 
