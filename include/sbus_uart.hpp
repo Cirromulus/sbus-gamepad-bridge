@@ -14,8 +14,8 @@ class SbusUart
 
 public:
 
-    void
-    initializeSbusUart()
+    SbusUart(uart_inst_t* uart, uint pin) :
+        mUart{uart}, mPin{pin}
     {
         // Big thanks to
         // https://github.com/GitJer/Some_RPI-Pico_stuff/blob/main/SBUS/gpio_invert/SBUS.cpp
@@ -36,7 +36,7 @@ public:
         return uart_getc(mUart);
     }
 
-// private: // i am lazy
+private:
     uart_inst_t* mUart;
-    size_t mPin;
+    uint mPin;
 };

@@ -22,7 +22,7 @@ public:
     getLatest()
     {
         // TODO: Find out whether the read needs to be instantaneous.
-        // ALSO TODO: Analyze "fairness" of this tryenter.
+        // ALSO TODO: Analyze "fairness" of this try_enter.
         // Seems to work, but threading is complicated!
         if (mutex_try_enter(&mMutex, 0))
         {

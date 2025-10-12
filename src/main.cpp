@@ -12,10 +12,10 @@
 static constexpr size_t onboardLedNr = 16;
 static constexpr bool testingValues = false;
 
-void coprocessor()
+void sbus_handling()
 {
     static SbusDecoder decoder;
-    static SbusUart receiver{uart0, 2};
+    SbusUart receiver{uart0, 2};
 
     while(1)
     {
@@ -32,13 +32,35 @@ void coprocessor()
       }
       else
       {
-        decoder.consumeChar(receiver.getByte())
-          .transform([](auto s){return global::sbusState.setLatest(s);});
-          // ignoring output for now.
-          // A "has value" with false means that we could not update the state
-          // through the thread synchronization mechanism.
-      }
+        // debug code ----
+        global::blinkInfo->setState(BlinkInfo::State::noSbus);
+        const uint8_t sbusByte = receiver.getByte();
+        global::blinkInfo->setState(BlinkInfo::State::receivingSbus);
 
+        // ----
+        const auto maybeSbusFrameSync =
+          decoder.consumeChar(sbusByte /*receiver.getByte()*/)
+            .transform([](auto s){return global::sbusState.setLatest(s);});
+
+        if (maybeSbusFrameSync)
+        {
+          global::blinkInfo->setState(BlinkInfo::State::receivingValidSbus);
+        }
+        else
+        {
+            // Debug code! TODO: Only start after some lost frames
+            static SbusChannels testingState{};
+            static uint16_t counter{0};
+
+            // TODO: Just print it out
+            testingState.axis[0] = sbusByte;
+            testingState.axis[1] = counter++;
+            // FIXME: Why would this line cause (at least) core0 to hang?
+            // testingState.flags = board_button_read();
+
+            global::sbusState.setLatest(testingState);
+        }
+      }
     }
 }
 
@@ -49,7 +71,7 @@ int main(void)
     global::blinkInfo->setState(BlinkInfo::State::usbIniting);
 
     multicore_reset_core1();
-    multicore_launch_core1(coprocessor);
+    multicore_launch_core1(sbus_handling);
 
     hid::init();
 

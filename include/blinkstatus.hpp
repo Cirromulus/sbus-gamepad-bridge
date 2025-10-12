@@ -12,7 +12,10 @@ public:
         usbIniting,
         notMounted,
         mounted,
-        suspended
+        suspended,
+        noSbus,
+        receivingSbus,
+        receivingValidSbus,
     };
 
     void
@@ -38,9 +41,15 @@ private:
             case State::notMounted:
                 return WS2812LED::Color{255, 20, 20} * lightness;
             case State::mounted:
-                return WS2812LED::Color{0, 255, 0} * lightness;
+                return WS2812LED::Color{0, 100, 0} * lightness;
             case State::suspended:
                 return WS2812LED::Color{0, 100, 200} * lightness;
+            case State::noSbus:
+                return WS2812LED::Color{100, 0, 100} * lightness;
+            case State::receivingSbus:
+                return WS2812LED::Color{0, 100, 100} * lightness;
+            case State::receivingValidSbus:
+                return WS2812LED::Color{0, 255, 100} * lightness;
         }
 
         // should never happen
