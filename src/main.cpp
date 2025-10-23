@@ -16,6 +16,7 @@ static constexpr size_t failsafeAfter_ms = 500;
 static constexpr SbusChannels failsafeState {
   {0}, SbusChannels::failsafeMask
 };
+static_assert(failsafeState.isFailsafeOn());
 
 void sbus_handling()
 {

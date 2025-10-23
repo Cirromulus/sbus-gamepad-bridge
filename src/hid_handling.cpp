@@ -17,6 +17,7 @@ namespace hid
         bool
         operator== (Report const& other)
         {
+            // FIXME: this is ugly and probably the source of the comparison bug
             return memcmp(&mainReport, &other.mainReport, sizeof(hid_sbus_report_t)) == 0 &&
                    memcmp(&restReport, &other.restReport, sizeof(hid_sbus_report_extension_t)) == 0;
         }
@@ -107,10 +108,10 @@ namespace hid
         }
 
         const Report newState = fromSbusState(global::sbusState.getLatest());
-        if (lastSentState && *lastSentState == newState)
-        {
-            return;
-        }
+        // if (lastSentState && *lastSentState == newState)
+        // {
+        //     return;
+        // }
         lastSentState = newState;
 
         // Remote wakeup
