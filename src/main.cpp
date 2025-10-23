@@ -11,6 +11,7 @@
 #include <string.h>
 
 static constexpr size_t onboardLedNr = 16;
+static constexpr size_t uartRxPin = 13;
 static constexpr size_t failsafeAfter_ms = 500;
 static constexpr SbusChannels failsafeState {
   {0}, SbusChannels::failsafeMask
@@ -19,7 +20,7 @@ static constexpr SbusChannels failsafeState {
 void sbus_handling()
 {
     static SbusDecoder decoder;
-    SbusUart<failsafeAfter_ms> receiver{uart0, 1};
+    SbusUart<failsafeAfter_ms> receiver{uart0, uartRxPin};
 
     bool hadValidSbus = false;
 
@@ -62,7 +63,7 @@ void sbus_handling()
       }
       else
       {
-        // TODO: Go into failsafe after some time?
+        // TODO: Go also here into failsafe after some time?
         // Or manually re-sending the last one with "frame lost" bit?
         global::blinkInfo->setState(BlinkInfo::State::lostSbusFrame);
         hadValidSbus = false;
